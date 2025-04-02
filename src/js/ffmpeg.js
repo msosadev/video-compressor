@@ -1,55 +1,40 @@
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 
-let loaded = false;
-const ffmpeg = new FFmpeg();
-const videoElement = document.createElement("video");
-videoElement.controls = true;
-const buttonElement = document.createElement("button");
-const messageElement = document.createElement("p");
-
 class VideoCompressor extends HTMLElement {
-
     connectedCallback() {
-        this.render();
+        this.ffmpegLoaded = false;
+        this.ffmpeg = new FFmpeg();
+        this.baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+        this.video = this.querySelector('video');
+        this.input = this.querySelector('input');
+        this.message = this.querySelector('p');
+
+        this.loadFFmpeg();
+
+        this.input.addEventListener('change', async (e) => {
+            const promise = await fetchFile(e.target.files[0]);
+            this.transcode(promise);
+        });
     }
 
-    load = async () => {
-        const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
-        ffmpeg.on('log', ({ message }) => {
-            messageElement.innerText = message;
+    loadFFmpeg = async () => {
+        this.ffmpeg.on('log', ({ message }) => {
+            this.message.innerText = message;
             console.log(message);
         });
-        await ffmpeg.load({
-            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        await this.ffmpeg.load({
+            coreURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.js`, 'text/javascript'),
+            wasmURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
         });
-        loaded = true;
-        this.render();
+        this.ffmpegLoaded = true;
     }
 
-    transcode = async () => {
-        await ffmpeg.writeFile('input.webm', await fetchFile('https://raw.githubusercontent.com/ffmpegwasm/testdata/master/Big_Buck_Bunny_180_10s.webm'));
-        await ffmpeg.exec(['-i', 'input.webm', 'output.mp4']);
-        const data = await ffmpeg.readFile('output.mp4');
-        videoElement.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
-    }
-
-    render = async () => {
-        document.body.innerHTML = "";
-        if (loaded) {
-            buttonElement.innerText = "Transcode webm to mp4";
-            buttonElement.onclick = this.transcode;
-            document.body.appendChild(videoElement);
-            document.body.appendChild(document.createElement("br"));
-            document.body.appendChild(buttonElement);
-            document.body.appendChild(messageElement);
-            document.body.appendChild(document.createElement("p")).innerText = "Open Developer Tools (Ctrl+Shift+I) to View Logs";
-        } else {
-            buttonElement.innerText = "Load ffmpeg-core (~31 MB)";
-            buttonElement.onclick = this.load;
-            document.body.appendChild(buttonElement);
-        }
+    transcode = async (promise) => {
+        await this.ffmpeg.writeFile('input.webm', promise);
+        await this.ffmpeg.exec(['-i', 'input.webm', 'output.mp4']);
+        const data = await this.ffmpeg.readFile('output.mp4');
+        this.video.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
     }
 }
 
