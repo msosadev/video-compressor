@@ -7,14 +7,18 @@ class VideoCompressor extends HTMLElement {
         this.ffmpeg = new FFmpeg();
         this.baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
         this.video = this.querySelector('video');
-        this.input = this.querySelector('input');
+        this.fileInput = this.querySelector('input[type="file"]');
+        this.inputMin = this.querySelector("#min-time");
+        this.inputMax = this.querySelector("#max-time");
         this.message = this.querySelector('p');
         this.allowedFormats = ['mp4', 'webm'];
         this.outputFormat = 'output.mp4'
+        console.log(this.inputMin, this.inputMax);
+        
 
         this.loadFFmpeg();
 
-        this.input.addEventListener('change', async (e) => {
+        this.fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             const promise = await fetchFile(e.target.files[0]);
             const format = file.type.split('/')[1];
@@ -23,9 +27,11 @@ class VideoCompressor extends HTMLElement {
                 this.ffmpegExecs = {
                     webmToMp4: ['-i', this.inputFormat, this.outputFormat],
                     changeCodec: ['-i', this.inputFormat, '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', this.outputFormat],
-                    codecAndCut: ['-i', this.inputFormat, "-ss", "10", "-to", "20", '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', this.outputFormat],
-                    cutVideo: ["-i", this.inputFormat, "-ss", "10", "-to", "20", "-c", "copy", this.outputFormat]
+                    codecAndCut: ['-i', this.inputFormat, "-ss", this.inputMin.value, "-to", this.inputMax.value, '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', this.outputFormat],
+                    cutVideo: ["-i", this.inputFormat, "-ss", this.inputMin.value, "-to", this.inputMax.value, "-c", "copy", this.outputFormat]
                 }
+                console.log(this.ffmpegExecs.cutVideo);
+                
                 this.transcode(promise);
             } else {
                 this.message.innerText = 'Format not supported';
@@ -44,7 +50,7 @@ class VideoCompressor extends HTMLElement {
             coreURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.js`, 'text/javascript'),
             wasmURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
         });
-        this.input.disabled = false;
+        this.fileInput.disabled = false;
         this.ffmpegLoaded = true;
     }
 

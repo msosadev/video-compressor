@@ -9,9 +9,11 @@
   <body>
     <div id="app">
       <video-compressor>
-        <video controls></video>
+        <video style="max-width: 500px" controls></video>
         <br>
         <input disabled type="file">
+        <input type="text" name="min-time" id="min-time">
+        <input type="text" name="max-time" id="max-time">
         <br>
         <p style="opacity: 0.5"></p>
       </video-compressor>
