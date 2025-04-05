@@ -9,7 +9,13 @@ class VideoCompressor extends HTMLElement {
         this.video = this.querySelector('video');
         this.input = this.querySelector('input');
         this.message = this.querySelector('p');
+        this.inputFormat = 'input.webm';
 
+        this.ffmpegExecs = {
+            webmToMp4: ['-i', 'input.webm', 'output.mp4'],
+            changeCodec: ['-i', this.inputFormat, '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', 'compressed_output.mp4']
+        }
+        
         this.loadFFmpeg();
 
         this.input.addEventListener('change', async (e) => {
@@ -20,8 +26,10 @@ class VideoCompressor extends HTMLElement {
 
     loadFFmpeg = async () => {
         this.ffmpeg.on('log', ({ message }) => {
-            this.message.innerText = message;
             console.log(message);
+        });
+        this.ffmpeg.on("progress", ({ progress }) => {
+            this.message.innerText = Math.trunc(progress*100);
         });
         await this.ffmpeg.load({
             coreURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.js`, 'text/javascript'),
@@ -31,8 +39,8 @@ class VideoCompressor extends HTMLElement {
     }
 
     transcode = async (promise) => {
-        await this.ffmpeg.writeFile('input.webm', promise);
-        await this.ffmpeg.exec(['-i', 'input.webm', 'output.mp4']);
+        await this.ffmpeg.writeFile(this.inputFormat, promise);
+        await this.ffmpeg.exec(this.ffmpegExecs.webmToMp4);
         const data = await this.ffmpeg.readFile('output.mp4');
         this.video.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
     }
