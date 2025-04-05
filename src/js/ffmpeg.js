@@ -10,6 +10,7 @@ class VideoCompressor extends HTMLElement {
         this.input = this.querySelector('input');
         this.message = this.querySelector('p');
         this.allowedFormats = ['mp4', 'webm'];
+        this.outputFormat = 'output.mp4'
 
         this.loadFFmpeg();
 
@@ -20,8 +21,10 @@ class VideoCompressor extends HTMLElement {
             if (this.allowedFormats.includes(format)) {
                 this.inputFormat = `input.${format}`;
                 this.ffmpegExecs = {
-                    webmToMp4: ['-i', this.inputFormat, 'output.mp4'],
-                    changeCodec: ['-i', this.inputFormat, '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', 'compressed_output.mp4']
+                    webmToMp4: ['-i', this.inputFormat, this.outputFormat],
+                    changeCodec: ['-i', this.inputFormat, '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', this.outputFormat],
+                    codecAndCut: ['-i', this.inputFormat, "-ss", "10", "-to", "20", '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', this.outputFormat],
+                    cutVideo: ["-i", this.inputFormat, "-ss", "10", "-to", "20", "-c", "copy", this.outputFormat]
                 }
                 this.transcode(promise);
             } else {
@@ -47,8 +50,8 @@ class VideoCompressor extends HTMLElement {
 
     transcode = async (promise) => {
         await this.ffmpeg.writeFile(this.inputFormat, promise);
-        await this.ffmpeg.exec(this.ffmpegExecs.webmToMp4);
-        const data = await this.ffmpeg.readFile('output.mp4');
+        await this.ffmpeg.exec(this.ffmpegExecs.codecAndCut);
+        const data = await this.ffmpeg.readFile(this.outputFormat);
         this.video.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
     }
 }
