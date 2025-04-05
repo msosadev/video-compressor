@@ -9,18 +9,24 @@ class VideoCompressor extends HTMLElement {
         this.video = this.querySelector('video');
         this.input = this.querySelector('input');
         this.message = this.querySelector('p');
-        this.inputFormat = 'input.webm';
+        this.allowedFormats = ['mp4', 'webm'];
 
-        this.ffmpegExecs = {
-            webmToMp4: ['-i', 'input.webm', 'output.mp4'],
-            changeCodec: ['-i', this.inputFormat, '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', 'compressed_output.mp4']
-        }
-        
         this.loadFFmpeg();
 
         this.input.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
             const promise = await fetchFile(e.target.files[0]);
-            this.transcode(promise);
+            const format = file.type.split('/')[1];
+            if (this.allowedFormats.includes(format)) {
+                this.inputFormat = `input.${format}`;
+                this.ffmpegExecs = {
+                    webmToMp4: ['-i', this.inputFormat, 'output.mp4'],
+                    changeCodec: ['-i', this.inputFormat, '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', 'compressed_output.mp4']
+                }
+                this.transcode(promise);
+            } else {
+                this.message.innerText = 'Format not supported';
+            }
         });
     }
 
@@ -35,6 +41,7 @@ class VideoCompressor extends HTMLElement {
             coreURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.js`, 'text/javascript'),
             wasmURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
         });
+        this.input.disabled = false;
         this.ffmpegLoaded = true;
     }
 
