@@ -13,6 +13,7 @@ class VideoCompressor extends HTMLElement {
         this.message = this.querySelector('p');
         this.allowedFormats = ['mp4', 'webm'];
         this.outputFormat = 'output.mp4'
+        this.loadingImg = this.querySelector('img');
         console.log(this.inputMin, this.inputMax);
         
 
@@ -55,10 +56,12 @@ class VideoCompressor extends HTMLElement {
     }
 
     transcode = async (promise) => {
+        this.loadingImg.style.display = "block";
         await this.ffmpeg.writeFile(this.inputFormat, promise);
         await this.ffmpeg.exec(this.ffmpegExecs.codecAndCut);
         const data = await this.ffmpeg.readFile(this.outputFormat);
         this.video.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+        this.loadingImg.style.display = "none";
     }
 }
 
