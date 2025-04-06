@@ -10,12 +10,16 @@
     <div id="app">
       <video-compressor>
         <main class="video-wrapper">
-          <video src="./src/output.mp4" controls muted autoplay></video>
+          <video controls muted autoplay></video>
         </main>
         <br>
         <input disabled type="file">
-        <input type="text" name="min-time" id="min-time">
-        <input type="text" name="max-time" id="max-time">
+        <button>Compress Video</button>
+        <input value="10" type="number" name="file-size" id="file-size">
+        <div class="duration-wrapper">
+          <input value="0" type="text" name="min-time" id="min-time">
+          <input value="12" type="text" name="max-time" id="max-time">
+        </div>
         <br>
         <img style="display: none" src="./src/cat-spinning.gif" alt="Spinning cat">
         <p style="opacity: 0.5"></p>
