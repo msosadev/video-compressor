@@ -9,7 +9,12 @@
   <body>
     <div id="app">
       <video-compressor>
-        <video style="max-width: 500px" controls></video>
+        <main class="video-wrapper">
+          <video src="./src/output.mp4" controls muted autoplay></video>
+          <!-- <footer>
+            <progress id="file" value="32" max="100"> 32% </progress>
+          </footer> -->
+        </main>
         <br>
         <input disabled type="file">
         <input type="text" name="min-time" id="min-time">

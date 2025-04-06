@@ -14,8 +14,6 @@ class VideoCompressor extends HTMLElement {
         this.allowedFormats = ['mp4', 'webm'];
         this.outputFormat = 'output.mp4'
         this.loadingImg = this.querySelector('img');
-        console.log(this.inputMin, this.inputMax);
-        
 
         this.loadFFmpeg();
 
@@ -23,19 +21,62 @@ class VideoCompressor extends HTMLElement {
             const file = e.target.files[0];
             const promise = await fetchFile(e.target.files[0]);
             const format = file.type.split('/')[1];
-            if (this.allowedFormats.includes(format)) {
+            if (this.allowedFormats.includes(format) && this.inputMin.value && this.inputMax.value) {
                 this.inputFormat = `input.${format}`;
+                
+
+                const startTime = parseFloat(this.inputMin.value);
+                const endTime = parseFloat(this.inputMax.value);
+                const duration = endTime - startTime;
+                const targetSizeMB = 10;
+                const audioBitrate = 64;
+                const totalBitrate = (targetSizeMB * 8192) / duration;
+                const videoBitrate = Math.max(totalBitrate - audioBitrate, 300); // Prevent too low
+
                 this.ffmpegExecs = {
                     webmToMp4: ['-i', this.inputFormat, this.outputFormat],
-                    changeCodec: ['-i', this.inputFormat, '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', this.outputFormat],
-                    codecAndCut: ['-i', this.inputFormat, "-ss", this.inputMin.value, "-to", this.inputMax.value, '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', this.outputFormat],
-                    cutVideo: ["-i", this.inputFormat, "-ss", this.inputMin.value, "-to", this.inputMax.value, "-c", "copy", this.outputFormat]
+                    changeCodec: [
+                        '-i', this.inputFormat,
+                        '-c:v', 'libx264',
+                        '-preset', 'ultrafast',
+                        '-pix_fmt', 'yuv420p',
+                        this.outputFormat
+                    ],
+                    codecAndCut: [
+                        '-i', this.inputFormat,
+                        "-ss", this.inputMin.value,
+                        "-to", this.inputMax.value,
+                        '-c:v', 'libx264',
+                        '-preset', 'ultrafast',
+                        '-pix_fmt', 'yuv420p',
+                        this.outputFormat
+                    ],
+                    cutVideo: [
+                        "-i", this.inputFormat,
+                        "-ss", this.inputMin.value,
+                        "-to", this.inputMax.value,
+                        "-c", "copy",
+                        this.outputFormat
+                    ],
+                    compressToSize: [
+                        "-i", this.inputFormat,
+                        "-ss", String(startTime),
+                        "-to", String(endTime),
+                        "-c:v", "libx264",
+                        "-b:v", `${Math.floor(videoBitrate)}k`,
+                        "-preset", "ultrafast",
+                        "-pix_fmt", "yuv420p",
+                        "-c:a", "aac",
+                        "-b:a", `${audioBitrate}k`,
+                        this.outputFormat
+                    ]
                 }
-                console.log(this.ffmpegExecs.cutVideo);
-                
+
                 this.transcode(promise);
-            } else {
+            } else if (!this.allowedFormats.includes(format)) {
                 this.message.innerText = 'Format not supported';
+            } else if (!this.inputMin.value || !this.inputMax.value) {
+                this.message.innerText = 'Start or end time not inserted';
             }
         });
     }
@@ -45,7 +86,7 @@ class VideoCompressor extends HTMLElement {
             console.log(message);
         });
         this.ffmpeg.on("progress", ({ progress }) => {
-            this.message.innerText = Math.trunc(progress*100);
+            this.message.innerText = Math.trunc(progress * 100);
         });
         await this.ffmpeg.load({
             coreURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.js`, 'text/javascript'),
@@ -58,7 +99,7 @@ class VideoCompressor extends HTMLElement {
     transcode = async (promise) => {
         this.loadingImg.style.display = "block";
         await this.ffmpeg.writeFile(this.inputFormat, promise);
-        await this.ffmpeg.exec(this.ffmpegExecs.codecAndCut);
+        await this.ffmpeg.exec(this.ffmpegExecs.compressToSize);
         const data = await this.ffmpeg.readFile(this.outputFormat);
         this.video.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
         this.loadingImg.style.display = "none";
