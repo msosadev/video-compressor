@@ -106,5 +106,4 @@ class VideoCompressor extends HTMLElement {
     }
 }
 
-customElements.define('video-compressor', VideoCompressor);
-
+export default VideoCompressor;
