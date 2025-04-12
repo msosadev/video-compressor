@@ -15,13 +15,18 @@ class VideoCompressor extends HTMLElement {
         this.allowedFormats = ['mp4', 'webm'];
         this.outputFormat = 'output.mp4'
         this.loadingImg = this.querySelector('img');
-        this.submitButton = this.querySelector("button")        
+        this.submitButton = this.querySelector("button");
+        this.videoProgress = this.querySelector(".js-video-progress");
 
         this.loadFFmpeg();
 
-        this.video.addEventListener("keydown", (e) => {
-            console.log('pres');
-            
+        document.body.addEventListener("keydown", (e) => {
+            if (e.key === "e") {
+                const tick = document.createElement('option');
+                tick.value = Math.floor((this.video.currentTime * Number(this.videoProgress.getAttribute("max"))) / this.video.duration);
+                this.querySelector('#tickmarks').append(tick);
+            };
+
             if (e.key === "v") {
                 this.inputMin.value = this.video.currentTime;
             };
@@ -37,11 +42,14 @@ class VideoCompressor extends HTMLElement {
             this.filePromise = await fetchFile(e.target.files[0]);
         });
 
-        this.submitButton.addEventListener('click', ()=> {
+        this.video.addEventListener('loadedmetadata', () => this.videoProgress.max = this.video.duration);
+        this.video.addEventListener('timeupdate', () => this.videoProgress.value = this.video.currentTime);
+        this.videoProgress.addEventListener('input', () => this.video.currentTime = this.videoProgress.value);
+
+        this.submitButton.addEventListener('click', () => {
             const format = this.file.type.split('/')[1];
             if (this.allowedFormats.includes(format) && this.inputMin.value && this.inputMax.value) {
                 this.inputFormat = `input.${format}`;
-                
 
                 const startTime = parseFloat(this.inputMin.value);
                 const endTime = parseFloat(this.inputMax.value);
