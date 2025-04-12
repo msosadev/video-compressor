@@ -9,14 +9,13 @@ class VideoCompressor extends HTMLElement {
         this.video = this.querySelector('video');
         this.fileInput = this.querySelector('input[type="file"]');
         this.sizeInput = this.querySelector("#file-size");
-        this.inputMin = this.querySelector("#min-time");
-        this.inputMax = this.querySelector("#max-time");
         this.message = this.querySelector('p');
         this.allowedFormats = ['mp4', 'webm'];
         this.outputFormat = 'output.mp4'
         this.loadingImg = this.querySelector('img');
         this.submitButton = this.querySelector("button");
         this.videoProgress = this.querySelector(".js-video-progress");
+        this.tickmarksWrapper = this.querySelector('#tickmarks');
 
         this.loadFFmpeg();
 
@@ -24,15 +23,10 @@ class VideoCompressor extends HTMLElement {
             if (e.key === "e") {
                 const tick = document.createElement('option');
                 tick.value = Math.floor((this.video.currentTime * Number(this.videoProgress.getAttribute("max"))) / this.video.duration);
-                this.querySelector('#tickmarks').append(tick);
-            };
-
-            if (e.key === "v") {
-                this.inputMin.value = this.video.currentTime;
-            };
-
-            if (e.key === "b") {
-                this.inputMax.value = this.video.currentTime;
+                if (this.tickmarksWrapper.children.length > 1) {
+                    this.tickmarksWrapper.children[0].remove();
+                }
+                this.tickmarksWrapper.append(tick);
             };
         });
 
@@ -48,11 +42,14 @@ class VideoCompressor extends HTMLElement {
 
         this.submitButton.addEventListener('click', () => {
             const format = this.file.type.split('/')[1];
-            if (this.allowedFormats.includes(format) && this.inputMin.value && this.inputMax.value) {
+            if (this.allowedFormats.includes(format) && this.tickmarksWrapper.children.length == 2) {
                 this.inputFormat = `input.${format}`;
 
-                const startTime = parseFloat(this.inputMin.value);
-                const endTime = parseFloat(this.inputMax.value);
+                const firstTick = parseFloat(this.tickmarksWrapper.children[0].value);
+                const secondTick = parseFloat(this.tickmarksWrapper.children[1].value);
+
+                const startTime = firstTick > secondTick ? secondTick : firstTick;
+                const endTime = firstTick < secondTick ? secondTick : firstTick;
                 const duration = endTime - startTime;
                 const targetSizeMB = Number(this.sizeInput.value);
                 const audioBitrate = 64;
@@ -64,8 +61,8 @@ class VideoCompressor extends HTMLElement {
                 this.ffmpegExecs = {
                     cutVideo: [
                         "-i", this.inputFormat,
-                        "-ss", this.inputMin.value,
-                        "-to", this.inputMax.value,
+                        "-ss", String(startTime),
+                        "-to", String(secondTick),
                         "-c", "copy",
                         inputCut
                     ],
@@ -80,11 +77,13 @@ class VideoCompressor extends HTMLElement {
                         this.outputFormat
                     ]
                 }
+                console.log(this.ffmpegExecs);
+                
 
                 this.transcode();
             } else if (!this.allowedFormats.includes(format)) {
                 this.message.innerText = 'Format not supported';
-            } else if (!this.inputMin.value || !this.inputMax.value) {
+            } else if (!this.tickmarksWrapper.children.length !== 2) {
                 this.message.innerText = 'Start or end time not inserted';
             }
         })
