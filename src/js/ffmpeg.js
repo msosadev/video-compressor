@@ -16,7 +16,6 @@ class VideoCompressor extends HTMLElement {
         this.submitButton = this.querySelector("button.js-compress-btn");
         this.videoProgress = this.querySelector(".js-video-progress");
         this.tickmarksWrapper = this.querySelector('#tickmarks');
-        this.playPauseBtn = this.querySelector(".js-play-pause");
 
         this.loadFFmpeg();
 

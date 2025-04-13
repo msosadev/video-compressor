@@ -3,8 +3,6 @@ class PlayPauseButton extends HTMLButtonElement {
         this.video = this.closest("video-compressor").video;
 
         this.addEventListener('click', () => {
-            if (this.disabled) return;
-
             if (this.video.paused || this.video.ended) {
                 this.playVideo()
             } else {
@@ -31,8 +29,29 @@ class PlayPauseButton extends HTMLButtonElement {
 
 class MuteButton extends HTMLButtonElement {
     connectedCallback() {
-        console.log(this);
+        this.video = this.closest("video-compressor").video;
 
+        this.addEventListener('click', () => {
+            if (this.video.muted) {
+                this.unmuteVideo()
+            } else {
+                this.muteVideo();
+            }
+        });
+
+        this.video.addEventListener('loadedmetadata', () => {
+            this.disabled = false;
+        });
+    }
+
+    muteVideo() {
+        this.video.muted = true;
+        this.textContent = 'Unmute';
+    }
+
+    unmuteVideo() {
+        this.video.muted = false;
+        this.textContent = 'Mute';
     }
 }
 
