@@ -2,10 +2,15 @@
   --body-bg: #333;
   --card-bg: #fff;
   --text-fg: #fff;
+
+  /* Button */
+  --button-bg: #333;
+  --button-fg: #fff;
 }
 
 * {
   box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
@@ -33,4 +38,21 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 8px;
   width: 100%;
+}
+
+.video-control {
+  all: unset;
+  background-color: var(--button-bg);
+  color: var(--button-fg);
+  padding: 8px;
+  cursor: pointer;
+  transform: translate(-5px, -5px);
+  box-shadow: 3px 3px 0 0 rebeccapurple;
+
+  transition: all 100ms;
+}
+
+.video-control:active {
+  transform: translate(0, 0);
+  box-shadow: 0 0 0 0 rebeccapurple;
 }
