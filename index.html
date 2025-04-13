@@ -11,15 +11,18 @@
       <video-compressor>
         <main class="video-wrapper">
           <video controls muted autoplay></video>
+          <div class="js-video-controls">
+            <button is="play-pause-button" disabled class="js-play-pause">Play</button>
+          </div>
           <div class="js-progress-container">
-            <input class="js-video-progress" type="range" id="video-progress" name="video-progress" list="tickmarks" min="0" max="1000" />
+            <input disabled class="js-video-progress" value="0" type="range" id="video-progress" name="video-progress" list="tickmarks" min="0" max="1000" />
             <datalist id="tickmarks">
             </datalist>
           </div>
         </main>
         <br>
         <input disabled type="file">
-        <button>Compress Video</button>
+        <button class="js-compress-btn">Compress Video</button>
         <input value="10" type="number" name="file-size" id="file-size">
         <br>
         <img style="display: none" src="./src/cat-spinning.gif" alt="Spinning cat">

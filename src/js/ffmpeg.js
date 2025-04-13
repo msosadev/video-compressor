@@ -13,9 +13,10 @@ class VideoCompressor extends HTMLElement {
         this.allowedFormats = ['mp4', 'webm'];
         this.outputFormat = 'output.mp4'
         this.loadingImg = this.querySelector('img');
-        this.submitButton = this.querySelector("button");
+        this.submitButton = this.querySelector("button.js-compress-btn");
         this.videoProgress = this.querySelector(".js-video-progress");
         this.tickmarksWrapper = this.querySelector('#tickmarks');
+        this.playPauseBtn = this.querySelector(".js-play-pause");
 
         this.loadFFmpeg();
 
@@ -36,9 +37,17 @@ class VideoCompressor extends HTMLElement {
             this.filePromise = await fetchFile(e.target.files[0]);
         });
 
-        this.video.addEventListener('loadedmetadata', () => this.videoProgress.max = this.video.duration);
+        // Video custom controls
+
+        this.video.addEventListener('loadedmetadata', () => {
+            this.videoProgress.max = this.video.duration;
+            this.videoProgress.disabled = false;
+        });
+
         this.video.addEventListener('timeupdate', () => this.videoProgress.value = this.video.currentTime);
         this.videoProgress.addEventListener('input', () => this.video.currentTime = this.videoProgress.value);
+
+        // Video Compression
 
         this.submitButton.addEventListener('click', () => {
             const format = this.file.type.split('/')[1];
@@ -78,7 +87,7 @@ class VideoCompressor extends HTMLElement {
                     ]
                 }
                 console.log(this.ffmpegExecs);
-                
+
 
                 this.transcode();
             } else if (!this.allowedFormats.includes(format)) {
