@@ -12,8 +12,8 @@
         <main class="video-wrapper">
           <video controls muted autoplay></video>
           <div class="js-video-controls">
-            <button is="play-pause-button" disabled class="play-pause-button video-control">Play</button>
-            <button is="mute-button" disabled class="mute-button video-control">Mute</button>
+            <button is="play-pause-button" disabled class="play-pause-button button">Play</button>
+            <button is="mute-button" disabled class="mute-button button">Mute</button>
           </div>
           <div class="js-progress-container">
             <input disabled class="js-video-progress" value="0" type="range" id="video-progress" name="video-progress" list="tickmarks" min="0" max="1000" />
@@ -22,8 +22,9 @@
           </div>
         </main>
         <br>
-        <input disabled type="file">
-        <button class="js-compress-btn">Compress Video</button>
+        <label for="file-input" class="button">File</label>
+        <input class="hidden" id="file-input" disabled type="file">
+        <button class="js-compress-btn button">Compress Video</button>
         <input value="10" type="number" name="file-size" id="file-size">
         <br>
         <img style="display: none" src="./src/cat-spinning.gif" alt="Spinning cat">

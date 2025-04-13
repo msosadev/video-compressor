@@ -1,5 +1,5 @@
 :root {
-  --body-bg: #333;
+  --body-bg: #fff;
   --card-bg: #fff;
   --text-fg: #fff;
 
@@ -14,7 +14,7 @@
 }
 
 body {
-  background-color: var(--background-color);
+  background-color: var(--body-bg);
 }
 
 .video-wrapper {
@@ -40,8 +40,10 @@ body {
   width: 100%;
 }
 
-.video-control {
+.button {
   all: unset;
+  display: block;
+  width: fit-content;
   background-color: var(--button-bg);
   color: var(--button-fg);
   padding: 8px;
@@ -52,7 +54,11 @@ body {
   transition: all 100ms;
 }
 
-.video-control:active {
+.button:active {
   transform: translate(0, 0);
   box-shadow: 0 0 0 0 rebeccapurple;
+}
+
+.hidden {
+  display: none;
 }
