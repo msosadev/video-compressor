@@ -1,11 +1,12 @@
 :root {
-  --body-bg: #fff;
+  --body-bg: #e0f6ff;
   --card-bg: #fff;
   --text-fg: #fff;
 
   /* Button */
-  --button-bg: #333;
-  --button-fg: #fff;
+  --button-bg: #fff;
+  --button-fg: #333;
+  --button-bd: #555;
 }
 
 * {
@@ -17,19 +18,27 @@ body {
   background-color: var(--body-bg);
 }
 
+.js-video-controls {
+  display: flex;
+  gap: 8px;
+}
+
 .video-wrapper {
   display: flex;
   flex-direction: column;
+  background-color: var(--card-bg);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  overflow: hidden;
 }
 
 .video-wrapper video {
   max-height: 80vh;
 }
 
+.js-video-controls,
 .video-wrapper .js-progress-container {
-  background-color: var(--card-bg);
   padding: 12px 16px;
-  border: 1px solid black;
 }
 
 .video-wrapper .js-video-progress {
@@ -46,21 +55,51 @@ body {
 
 .button {
   all: unset;
-  display: block;
-  width: fit-content;
+  border: 2px solid var(--button-bd);
+  border-radius: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   background-color: var(--button-bg);
   color: var(--button-fg);
-  padding: 8px;
   cursor: pointer;
-  transform: translate(-5px, -5px);
-  box-shadow: 3px 3px 0 0 rebeccapurple;
+  transform: translateY(-6px);
+  margin-top: 6px;
+  box-shadow: 0 6px 0 0 pink, 0 7px 2px 0 black;
 
   transition: all 100ms;
 }
 
+/* Play-pause button */
+.button.playing .feather-play,
+.button.paused .feather-pause {
+  display: none;
+}
+.button.paused .feather-play,
+.button.playing .feather-pause {
+  display: flex;
+}
+
+/* Mute-unmute button */
+.button.unmuted .feather-volume-x,
+.button.muted .feather-volume {
+  display: none;
+}
+.button.muted .feather-volume-x,
+.button.unmuted .feather-volume {
+  display: flex;
+}
+
 .button:active {
-  transform: translate(0, 0);
-  box-shadow: 0 0 0 0 rebeccapurple;
+  transform: translateY(0);
+  box-shadow: 0 0 0 0 pink;
+}
+
+#file-input:disabled + label.button,
+.button:disabled {
+  opacity: 0.4;
 }
 
 .hidden {
