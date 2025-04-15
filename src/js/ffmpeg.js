@@ -15,6 +15,7 @@ class VideoCompressor extends HTMLElement {
         this.submitButton = this.querySelector("button.js-compress-btn");
         this.videoProgress = this.querySelector(".js-video-progress");
         this.tickmarksWrapper = this.querySelector('#tickmarks');
+        this.waitingAudio = this.querySelector("audio");
 
         this.loadFFmpeg();
 
@@ -77,7 +78,7 @@ class VideoCompressor extends HTMLElement {
                         "-i", inputCut,
                         "-c:v", "libx264",
                         "-b:v", `${Math.floor(videoBitrate)}k`,
-                        "-preset", "ultrafast",
+                        "-preset", "superfast",
                         "-pix_fmt", "yuv420p",
                         "-c:a", "aac",
                         "-b:a", `${audioBitrate}k`,
@@ -113,11 +114,13 @@ class VideoCompressor extends HTMLElement {
 
     transcode = async () => {
         this.loadingImg.style.display = "block";
+        this.waitingAudio.play();
         await this.ffmpeg.writeFile(this.inputFormat, this.filePromise);
         await this.ffmpeg.exec(this.ffmpegExecs.cutVideo);
         await this.ffmpeg.exec(this.ffmpegExecs.compressToSize);
         const data = await this.ffmpeg.readFile(this.outputFormat);
         this.video.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+        this.waitingAudio.pause();
         this.loadingImg.style.display = "none";
     }
 }
