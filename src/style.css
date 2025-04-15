@@ -22,6 +22,10 @@ body {
   flex-direction: column;
 }
 
+.video-wrapper video {
+  max-height: 80vh;
+}
+
 .video-wrapper .js-progress-container {
   background-color: var(--card-bg);
   padding: 12px 16px;

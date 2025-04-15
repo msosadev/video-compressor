@@ -3,9 +3,8 @@ import { FFmpeg } from '@ffmpeg/ffmpeg';
 
 class VideoCompressor extends HTMLElement {
     connectedCallback() {
-        this.ffmpegLoaded = false;
         this.ffmpeg = new FFmpeg();
-        this.baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+        this.baseURL = '/ffmpeg';
         this.video = this.querySelector('video');
         this.fileInput = this.querySelector('input[type="file"]');
         this.sizeInput = this.querySelector("#file-size");
@@ -16,6 +15,7 @@ class VideoCompressor extends HTMLElement {
         this.submitButton = this.querySelector("button.js-compress-btn");
         this.videoProgress = this.querySelector(".js-video-progress");
         this.tickmarksWrapper = this.querySelector('#tickmarks');
+        this.waitingAudio = this.querySelector("audio");
 
         this.loadFFmpeg();
 
@@ -27,7 +27,7 @@ class VideoCompressor extends HTMLElement {
                     this.tickmarksWrapper.children[0].remove();
                 }
                 this.tickmarksWrapper.append(tick);
-            };
+            }
         });
 
         this.fileInput.addEventListener('change', async (e) => {
@@ -50,7 +50,7 @@ class VideoCompressor extends HTMLElement {
 
         this.submitButton.addEventListener('click', () => {
             const format = this.file.type.split('/')[1];
-            if (this.allowedFormats.includes(format) && this.tickmarksWrapper.children.length == 2) {
+            if (this.allowedFormats.includes(format) && this.tickmarksWrapper.children.length === 2) {
                 this.inputFormat = `input.${format}`;
 
                 const firstTick = parseFloat(this.tickmarksWrapper.children[0].value);
@@ -78,7 +78,7 @@ class VideoCompressor extends HTMLElement {
                         "-i", inputCut,
                         "-c:v", "libx264",
                         "-b:v", `${Math.floor(videoBitrate)}k`,
-                        "-preset", "ultrafast",
+                        "-preset", "superfast",
                         "-pix_fmt", "yuv420p",
                         "-c:a", "aac",
                         "-b:a", `${audioBitrate}k`,
@@ -91,34 +91,36 @@ class VideoCompressor extends HTMLElement {
                 this.transcode();
             } else if (!this.allowedFormats.includes(format)) {
                 this.message.innerText = 'Format not supported';
-            } else if (!this.tickmarksWrapper.children.length !== 2) {
+            } else if (this.tickmarksWrapper.children.length !== 2) {
                 this.message.innerText = 'Start or end time not inserted';
             }
         })
     }
 
     loadFFmpeg = async () => {
-        this.ffmpeg.on('log', ({ message }) => {
-            console.log(message);
-        });
-        this.ffmpeg.on("progress", ({ progress }) => {
-            this.message.innerText = Math.trunc(progress * 100);
-        });
+        this.ffmpeg.on('log', ({ message }) => console.log(message));
+        this.ffmpeg.on("progress", ({ progress }) => this.message.innerText = Math.trunc(progress * 100));
+        this.ffmpeg.on('error', (err) => console.error('FFmpeg error:', err));
+
         await this.ffmpeg.load({
             coreURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.js`, 'text/javascript'),
             wasmURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+            workerURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.worker.js`, 'text/javascript')
         });
+        
         this.fileInput.disabled = false;
         this.ffmpegLoaded = true;
     }
 
     transcode = async () => {
         this.loadingImg.style.display = "block";
+        this.waitingAudio.play();
         await this.ffmpeg.writeFile(this.inputFormat, this.filePromise);
         await this.ffmpeg.exec(this.ffmpegExecs.cutVideo);
         await this.ffmpeg.exec(this.ffmpegExecs.compressToSize);
         const data = await this.ffmpeg.readFile(this.outputFormat);
         this.video.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+        this.waitingAudio.pause();
         this.loadingImg.style.display = "none";
     }
 }
