@@ -2,6 +2,7 @@
   --body-bg: #e0f6ff;
   --card-bg: #fff;
   --text-fg: #fff;
+  --video-bg: #333;
 
   /* Button */
   --button-bg: #fff;
@@ -34,6 +35,7 @@ body {
 
 .video-wrapper video {
   max-height: 80vh;
+  background-color: var(--video-bg);
 }
 
 .js-video-controls,
@@ -92,11 +94,19 @@ body {
   display: flex;
 }
 
+.disabled,
+#file-input:disabled + label.button,
+.button:disabled,
 .button:active {
   transform: translateY(0);
   box-shadow: 0 0 0 0 pink;
 }
 
+.disabled {
+  pointer-events: none;
+}
+
+.disabled,
 #file-input:disabled + label.button,
 .button:disabled {
   opacity: 0.4;

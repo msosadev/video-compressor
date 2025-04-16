@@ -10,12 +10,14 @@ class VideoCompressor extends HTMLElement {
         this.sizeInput = this.querySelector("#file-size");
         this.message = this.querySelector('p');
         this.allowedFormats = ['mp4', 'webm'];
+        this.downloadName = "my-awesome-video"
         this.outputFormat = 'output.mp4'
         this.loadingImg = this.querySelector('img');
         this.submitButton = this.querySelector("button.js-compress-btn");
         this.videoProgress = this.querySelector(".js-video-progress");
         this.tickmarksWrapper = this.querySelector('#tickmarks');
         this.waitingAudio = this.querySelector("audio");
+        this.downloadButton = this.querySelector('a.download-button');
 
         this.loadFFmpeg();
 
@@ -50,8 +52,10 @@ class VideoCompressor extends HTMLElement {
 
         this.submitButton.addEventListener('click', () => {
             const format = this.file.type.split('/')[1];
+
             if (this.allowedFormats.includes(format) && this.tickmarksWrapper.children.length === 2) {
                 this.inputFormat = `input.${format}`;
+                this.downloadName = this.file.name.replace(`.${format}`, "-compressed.mp4");
 
                 const firstTick = parseFloat(this.tickmarksWrapper.children[0].value);
                 const secondTick = parseFloat(this.tickmarksWrapper.children[1].value);
@@ -112,6 +116,12 @@ class VideoCompressor extends HTMLElement {
         this.ffmpegLoaded = true;
     }
 
+    setupDownload = () => {
+        this.downloadButton.href = this.video.src;
+        this.downloadButton.download = this.downloadName;
+        this.downloadButton.classList.remove('disabled');
+    }
+
     transcode = async () => {
         this.loadingImg.style.display = "block";
         this.waitingAudio.play();
@@ -120,6 +130,7 @@ class VideoCompressor extends HTMLElement {
         await this.ffmpeg.exec(this.ffmpegExecs.compressToSize);
         const data = await this.ffmpeg.readFile(this.outputFormat);
         this.video.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+        this.setupDownload();
         this.waitingAudio.pause();
         this.loadingImg.style.display = "none";
     }
