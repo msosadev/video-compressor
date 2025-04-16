@@ -18,12 +18,14 @@ class PlayPauseButton extends HTMLButtonElement {
 
     pauseVideo() {
         this.video.pause();
-        this.textContent = 'Play';
+        this.classList.add("paused");
+        this.classList.remove("playing");
     }
 
     playVideo() {
         this.video.play();
-        this.textContent = 'Pause';
+        this.classList.remove("paused");
+        this.classList.add("playing");
     }
 }
 
@@ -46,12 +48,14 @@ class MuteButton extends HTMLButtonElement {
 
     muteVideo() {
         this.video.muted = true;
-        this.textContent = 'Unmute';
+        this.classList.add("muted");
+        this.classList.remove("unmuted");
     }
 
     unmuteVideo() {
         this.video.muted = false;
-        this.textContent = 'Mute';
+        this.classList.remove("muted");
+        this.classList.add("unmuted");
     }
 }
 
