@@ -7,6 +7,7 @@ class VideoCompressor extends HTMLElement {
         this.baseURL = '/ffmpeg';
         this.video = this.querySelector('video');
         this.fileInput = this.querySelector('input[type="file"]');
+        this.fileInputWrapper = this.querySelector(".file-input-floating");
         this.sizeInput = this.querySelector("#file-size");
         this.message = this.querySelector('p');
         this.allowedFormats = ['mp4', 'webm'];
@@ -36,6 +37,8 @@ class VideoCompressor extends HTMLElement {
             this.file = e.target.files[0];
             this.video.src = URL.createObjectURL(e.target.files[0]);
             this.filePromise = await fetchFile(e.target.files[0]);
+            this.fileInputWrapper.classList.add('hidden');
+            this.fileInput.disabled = true;
         });
 
         // Video custom controls

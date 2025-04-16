@@ -2,7 +2,7 @@
   --body-bg: #e0f6ff;
   --card-bg: #fff;
   --text-fg: #fff;
-  --video-bg: #333;
+  --video-bg: #fcffe0;
 
   /* Button */
   --button-bg: #fff;
@@ -36,6 +36,16 @@ body {
 .video-wrapper video {
   max-height: 80vh;
   background-color: var(--video-bg);
+  width: 100%;
+}
+
+.js-compress-controls {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 32px;
+  gap: 24px;
 }
 
 .js-video-controls,
@@ -55,10 +65,22 @@ body {
   width: 100%;
 }
 
+.video-container {
+  position: relative;
+}
+
+.file-input-floating {
+  z-index: 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .button {
   all: unset;
   border: 2px solid var(--button-bd);
-  border-radius: 100%;
+  border-radius: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -72,6 +94,39 @@ body {
   box-shadow: 0 6px 0 0 pink, 0 7px 2px 0 black;
 
   transition: all 100ms;
+}
+
+.wide-button {
+  min-width: 200px;
+}
+
+.file-size-input {
+  all: unset;
+  border: 2px solid var(--button-bd);
+  border-radius: 8px;
+  padding: 0 16px;
+  height: 40px;
+  background-color: var(--button-bg);
+  color: var(--button-fg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+
+  transition: all 100ms;
+  min-width: 200px;
+}
+
+.file-size-input-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.file-size-input-wrapper::after {
+  content: 'mb';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  pointer-events: none;
 }
 
 /* Play-pause button */
