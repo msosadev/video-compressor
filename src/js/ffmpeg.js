@@ -26,9 +26,8 @@ class VideoCompressor extends HTMLElement {
             if (e.key === "e") {
                 const tick = document.createElement('option');
                 tick.value = Math.floor((this.video.currentTime * Number(this.videoProgress.getAttribute("max"))) / this.video.duration);
-                if (this.tickmarksWrapper.children.length > 1) {
-                    this.tickmarksWrapper.children[0].remove();
-                }
+                if (this.tickmarksWrapper.children.length > 1) this.tickmarksWrapper.children[0].remove(); // Override previous tick
+                if (this.tickmarksWrapper.children.length == 1) this.submitButton.disabled = false;
                 this.tickmarksWrapper.append(tick);
             }
         });
@@ -97,8 +96,10 @@ class VideoCompressor extends HTMLElement {
 
                 this.transcode();
             } else if (!this.allowedFormats.includes(format)) {
+                this.message.classList.remove("hidden");
                 this.message.innerText = 'Format not supported';
             } else if (this.tickmarksWrapper.children.length !== 2) {
+                this.message.classList.remove("hidden");
                 this.message.innerText = 'Start or end time not inserted';
             }
         })
@@ -106,7 +107,10 @@ class VideoCompressor extends HTMLElement {
 
     loadFFmpeg = async () => {
         this.ffmpeg.on('log', ({ message }) => console.log(message));
-        this.ffmpeg.on("progress", ({ progress }) => this.message.innerText = Math.trunc(progress * 100));
+        this.ffmpeg.on("progress", ({ progress }) => {
+            this.message.classList.remove("hidden");
+            this.message.innerText = Math.trunc(progress * 100)
+        });
         this.ffmpeg.on('error', (err) => console.error('FFmpeg error:', err));
 
         await this.ffmpeg.load({
@@ -126,7 +130,7 @@ class VideoCompressor extends HTMLElement {
     }
 
     transcode = async () => {
-        this.loadingImg.style.display = "block";
+        this.loadingImg.classList.remove("hidden");
         this.waitingAudio.play();
         await this.ffmpeg.writeFile(this.inputFormat, this.filePromise);
         await this.ffmpeg.exec(this.ffmpegExecs.cutVideo);
@@ -135,7 +139,7 @@ class VideoCompressor extends HTMLElement {
         this.video.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
         this.setupDownload();
         this.waitingAudio.pause();
-        this.loadingImg.style.display = "none";
+        this.loadingImg.classList.add("hidden");
     }
 }
 

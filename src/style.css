@@ -1,6 +1,10 @@
 :root {
   --body-bg: #e0f6ff;
   --card-bg: #fff;
+  --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --card-radius: 8px;
+  --card-border: 2px solid var(--button-bd);
+  --card-error: red;
   --text-fg: #fff;
   --video-bg: #fcffe0;
 
@@ -39,13 +43,32 @@ body {
   width: 100%;
 }
 
-.js-compress-controls {
+.footer-row {
   display: flex;
   align-items: flex-start;
   justify-content: center;
   flex-wrap: wrap;
   margin-top: 32px;
   gap: 24px;
+}
+
+.js-compress-controls {
+  display: flex;
+  gap: 24px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.js-compress-controls .message {
+  display: block;
+  font-size: 14px;
+  background-color: var(--card-bg);
+  color: var(--button-fg);
+  box-shadow: var(--card-shadow);
+  border-radius: var(--card-radius);
+  padding: 8px;
+  border: var(--card-border);
+  border-left: 8px solid var(--card-error);
 }
 
 .js-video-controls,
@@ -102,13 +125,13 @@ body {
 
 .file-size-input {
   all: unset;
-  border: 2px solid var(--button-bd);
-  border-radius: 8px;
+  border: var(--card-border);
+  border-radius: var(--card-radius);
   padding: 0 16px;
   height: 40px;
   background-color: var(--button-bg);
   color: var(--button-fg);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--card-shadow);
 
   transition: all 100ms;
   min-width: 200px;
@@ -168,5 +191,10 @@ body {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
+}
+
+video-compressor {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
 }
