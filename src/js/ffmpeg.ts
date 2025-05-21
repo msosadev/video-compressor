@@ -2,30 +2,58 @@ import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 
 class VideoCompressor extends HTMLElement {
-    connectedCallback() {
-        this.ffmpeg = new FFmpeg();
-        this.baseURL = '/ffmpeg';
-        this.video = this.querySelector('video');
-        this.fileInput = this.querySelector('input[type="file"]');
-        this.fileInputWrapper = this.querySelector(".file-input-floating");
-        this.sizeInput = this.querySelector("#file-size");
-        this.message = this.querySelector('p');
-        this.allowedFormats = ['mp4', 'webm'];
-        this.downloadName = "my-awesome-video"
-        this.outputFormat = 'output.mp4'
-        this.loadingImg = this.querySelector('img');
-        this.submitButton = this.querySelector("button.js-compress-btn");
-        this.videoProgress = this.querySelector(".js-video-progress");
-        this.tickmarksWrapper = this.querySelector('#tickmarks');
-        this.waitingAudio = this.querySelector("audio");
-        this.downloadButton = this.querySelector('a.download-button');
+    video: HTMLVideoElement;
+    fileInput: HTMLInputElement;
+    fileInputWrapper: HTMLElement;
+    sizeInput: HTMLInputElement;
+    message: HTMLParagraphElement;
+    loadingImg: HTMLImageElement;
+    submitButton: HTMLButtonElement;
+    videoProgress: HTMLProgressElement;
+    tickmarksWrapper: HTMLElement;
+    waitingAudio: HTMLAudioElement;
+    downloadButton: HTMLAnchorElement;
+    ffmpeg: FFmpeg;
+    baseURL: string;
+    allowedFormats: string[];
+    downloadName: string;
+    outputFormat: string;
+    inputFormat: string;
+    ffmpegExecs: { [key: string]: string[] };
+    file: File | null;
+    filePromise: Uint8Array | null;
 
+    constructor() {
+        super();
+        this.video = this.querySelector('video')!;
+        this.fileInput = this.querySelector('input[type="file"]')!;
+        this.fileInputWrapper = this.querySelector(".file-input-floating")!;
+        this.sizeInput = this.querySelector("#file-size")!;
+        this.message = this.querySelector('p')!;
+        this.loadingImg = this.querySelector('img')!;
+        this.submitButton = this.querySelector("button.js-compress-btn")!;
+        this.videoProgress = this.querySelector(".js-video-progress")!;
+        this.tickmarksWrapper = this.querySelector('#tickmarks')!;
+        this.waitingAudio = this.querySelector("audio")!;
+        this.downloadButton = this.querySelector('a.download-button')!;
+        this.ffmpeg = new FFmpeg();
+        this.baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.10/dist/esm';
+        this.allowedFormats = ['mp4', 'webm'];
+        this.downloadName = "my-awesome-video";
+        this.inputFormat = "";
+        this.outputFormat = 'output.mp4';
+        this.ffmpegExecs = {};
+        this.file = null;
+        this.filePromise = null;
+    }
+
+    connectedCallback() {
         this.loadFFmpeg();
 
         document.body.addEventListener("keydown", (e) => {
             if (e.key === "e") {
                 const tick = document.createElement('option');
-                tick.value = Math.floor((this.video.currentTime * Number(this.videoProgress.getAttribute("max"))) / this.video.duration);
+                tick.value = Math.floor((this.video.currentTime * Number(this.videoProgress.max)) / this.video.duration).toString();
                 if (this.tickmarksWrapper.children.length > 1) this.tickmarksWrapper.children[0].remove(); // Override previous tick
                 if (this.tickmarksWrapper.children.length == 1) this.submitButton.disabled = false;
                 this.tickmarksWrapper.append(tick);
@@ -33,9 +61,12 @@ class VideoCompressor extends HTMLElement {
         });
 
         this.fileInput.addEventListener('change', async (e) => {
-            this.file = e.target.files[0];
-            this.video.src = URL.createObjectURL(e.target.files[0]);
-            this.filePromise = await fetchFile(e.target.files[0]);
+            const input = e.target as HTMLInputElement;
+            this.file = input.files?.[0] ?? null;
+            if (!this.file) return;
+            const blob = this.file;
+            this.video.src = URL.createObjectURL(blob);
+            this.filePromise = await fetchFile(blob);
             this.fileInputWrapper.classList.add('hidden');
             this.fileInput.disabled = true;
         });
@@ -44,7 +75,7 @@ class VideoCompressor extends HTMLElement {
 
         this.video.addEventListener('loadedmetadata', () => {
             this.videoProgress.max = this.video.duration;
-            this.videoProgress.disabled = false;
+            (this.videoProgress as any).disabled = false;
         });
 
         this.video.addEventListener('timeupdate', () => this.videoProgress.value = this.video.currentTime);
@@ -53,14 +84,15 @@ class VideoCompressor extends HTMLElement {
         // Video Compression
 
         this.submitButton.addEventListener('click', () => {
+            if (!this.file) return;
             const format = this.file.type.split('/')[1];
 
             if (this.allowedFormats.includes(format) && this.tickmarksWrapper.children.length === 2) {
                 this.inputFormat = `input.${format}`;
                 this.downloadName = this.file.name.replace(`.${format}`, "-compressed.mp4");
 
-                const firstTick = parseFloat(this.tickmarksWrapper.children[0].value);
-                const secondTick = parseFloat(this.tickmarksWrapper.children[1].value);
+                const firstTick = parseFloat((this.tickmarksWrapper.children[0] as HTMLOptionElement).value);
+                const secondTick = parseFloat((this.tickmarksWrapper.children[1] as HTMLOptionElement).value);
 
                 const startTime = firstTick > secondTick ? secondTick : firstTick;
                 const endTime = firstTick < secondTick ? secondTick : firstTick;
@@ -91,8 +123,6 @@ class VideoCompressor extends HTMLElement {
                         this.outputFormat
                     ]
                 }
-                console.log(this.ffmpegExecs);
-
 
                 this.transcode();
             } else if (!this.allowedFormats.includes(format)) {
@@ -109,9 +139,8 @@ class VideoCompressor extends HTMLElement {
         this.ffmpeg.on('log', ({ message }) => console.log(message));
         this.ffmpeg.on("progress", ({ progress }) => {
             this.message.classList.remove("hidden");
-            this.message.innerText = Math.trunc(progress * 100)
+            this.message.innerText = Math.trunc(progress * 100).toString();
         });
-        this.ffmpeg.on('error', (err) => console.error('FFmpeg error:', err));
 
         await this.ffmpeg.load({
             coreURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.js`, 'text/javascript'),
@@ -120,7 +149,6 @@ class VideoCompressor extends HTMLElement {
         });
         
         this.fileInput.disabled = false;
-        this.ffmpegLoaded = true;
     }
 
     setupDownload = () => {
@@ -130,12 +158,13 @@ class VideoCompressor extends HTMLElement {
     }
 
     transcode = async () => {
+        if (!this.filePromise) return;
         this.loadingImg.classList.remove("hidden");
         this.waitingAudio.play();
         await this.ffmpeg.writeFile(this.inputFormat, this.filePromise);
         await this.ffmpeg.exec(this.ffmpegExecs.cutVideo);
         await this.ffmpeg.exec(this.ffmpegExecs.compressToSize);
-        const data = await this.ffmpeg.readFile(this.outputFormat);
+        const data = await this.ffmpeg.readFile(this.outputFormat) as any;
         this.video.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
         this.setupDownload();
         this.waitingAudio.pause();
