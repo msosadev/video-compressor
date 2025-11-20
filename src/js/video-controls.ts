@@ -7,6 +7,8 @@ class PlayPauseButton extends HTMLButtonElement {
     }
 
     connectedCallback() {
+        this.disabled = true;
+
         this.addEventListener('click', () => {
             if (this.video?.paused || this.video?.ended) {
                 this.playVideo()
@@ -42,6 +44,8 @@ class MuteButton extends HTMLButtonElement {
         this.video = document.querySelector("video-compressor video");
     }
     connectedCallback() {
+        this.disabled = true;
+        
         if (!this.video) {
             console.error("Video element not found");
             return;

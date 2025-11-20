@@ -9,7 +9,7 @@ class VideoCompressor extends HTMLElement {
     message: HTMLParagraphElement;
     loadingImg: HTMLImageElement;
     submitButton: HTMLButtonElement;
-    videoProgress: HTMLProgressElement;
+    videoProgress: HTMLInputElement;
     tickmarksWrapper: HTMLElement;
     waitingAudio: HTMLAudioElement;
     downloadButton: HTMLAnchorElement;
@@ -48,6 +48,8 @@ class VideoCompressor extends HTMLElement {
     }
 
     connectedCallback() {
+        this.videoProgress.disabled = true;
+        this.submitButton.disabled = true;
         this.loadFFmpeg();
 
         document.body.addEventListener("keydown", (e) => {
@@ -74,12 +76,12 @@ class VideoCompressor extends HTMLElement {
         // Video custom controls
 
         this.video.addEventListener('loadedmetadata', () => {
-            this.videoProgress.max = this.video.duration;
-            (this.videoProgress as any).disabled = false;
+            this.videoProgress.max = String(this.video.duration);
+            this.videoProgress.disabled = false;
         });
 
-        this.video.addEventListener('timeupdate', () => this.videoProgress.value = this.video.currentTime);
-        this.videoProgress.addEventListener('input', () => this.video.currentTime = this.videoProgress.value);
+        this.video.addEventListener('timeupdate', () => this.videoProgress.value = String(this.video.currentTime));
+        this.videoProgress.addEventListener('input', () => this.video.currentTime = Number(this.videoProgress.value));
 
         // Video Compression
 
@@ -147,7 +149,7 @@ class VideoCompressor extends HTMLElement {
             wasmURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
             workerURL: await toBlobURL(`${this.baseURL}/ffmpeg-core.worker.js`, 'text/javascript')
         });
-        
+
         this.fileInput.disabled = false;
     }
 
