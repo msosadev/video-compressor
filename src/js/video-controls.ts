@@ -5,7 +5,7 @@ class PlayPauseButton extends HTMLButtonElement {
         super();
         this.video = document.querySelector("video-compressor video");
     }
-    
+
     connectedCallback() {
         this.addEventListener('click', () => {
             if (this.video?.paused || this.video?.ended) {
@@ -73,4 +73,31 @@ class MuteButton extends HTMLButtonElement {
     }
 }
 
-export { PlayPauseButton, MuteButton };
+class VideoVolume extends HTMLInputElement {
+    video: HTMLVideoElement | null;
+
+    constructor() {
+        super();
+        this.video = document.querySelector("video-compressor video");
+    }
+
+    connectedCallback() {
+        this.disabled = true;
+        
+        if (!this.video) {
+            console.error("Video element not found");
+            return;
+        }
+
+        this.video.addEventListener('loadedmetadata', () => {
+            this.disabled = false;
+            if (this.video) this.video.volume = Number(this.value) / 100;
+        });
+
+        this.addEventListener("input", (e: any) => {
+            if (this.video) this.video.volume = Number(e.target.value) / 100;
+        })
+    }
+}
+
+export { PlayPauseButton, MuteButton, VideoVolume };

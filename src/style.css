@@ -26,6 +26,8 @@ body {
 .js-video-controls {
   display: flex;
   gap: 8px;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .video-wrapper {
@@ -38,7 +40,7 @@ body {
 }
 
 .video-wrapper video {
-  max-height: 80vh;
+  max-height: 65vh;
   background-color: var(--video-bg);
   width: 100%;
 }
@@ -112,9 +114,9 @@ body {
   background-color: var(--button-bg);
   color: var(--button-fg);
   cursor: pointer;
-  transform: translateY(-6px);
-  margin-top: 6px;
-  box-shadow: 0 6px 0 0 pink, 0 7px 2px 0 black;
+  transform: translateY(-4px);
+  margin-top: 4px;
+  box-shadow: 0 4px 0 0 pink, 0 4.5px 2px 0 black;
 
   transition: all 100ms;
 }
@@ -197,4 +199,19 @@ body {
 video-compressor {
   display: grid;
   grid-template-rows: 1fr auto auto;
+}
+
+.js-video-controls .js-video-volume {
+  align-self: flex-end;
+}
+
+.js-video-controls .buttons-wrapper {
+  display: flex;
+  gap: 8px;
+}
+
+.js-video-controls .volume-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
