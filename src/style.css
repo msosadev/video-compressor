@@ -40,7 +40,7 @@ body {
 }
 
 .video-wrapper video {
-  max-height: 65vh;
+  height: 65vh;
   background-color: var(--video-bg);
   width: 100%;
 }
@@ -210,7 +210,7 @@ video-compressor {
   gap: 8px;
 }
 
-.js-video-controls .volume-wrapper {
+.volume-wrapper {
   display: flex;
   gap: 8px;
   align-items: center;

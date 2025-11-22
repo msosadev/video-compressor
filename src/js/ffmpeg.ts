@@ -138,7 +138,7 @@ class VideoCompressor extends HTMLElement {
     }
 
     loadFFmpeg = async () => {
-        this.ffmpeg.on('log', ({ message }) => console.log(message));
+        // this.ffmpeg.on('log', ({ message }) => console.log(message));
         this.ffmpeg.on("progress", ({ progress }) => {
             this.message.classList.remove("hidden");
             this.message.innerText = Math.trunc(progress * 100).toString();

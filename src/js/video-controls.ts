@@ -45,7 +45,7 @@ class MuteButton extends HTMLButtonElement {
     }
     connectedCallback() {
         this.disabled = true;
-        
+
         if (!this.video) {
             console.error("Video element not found");
             return;
@@ -87,7 +87,7 @@ class VideoVolume extends HTMLInputElement {
 
     connectedCallback() {
         this.disabled = true;
-        
+
         if (!this.video) {
             console.error("Video element not found");
             return;
@@ -104,4 +104,30 @@ class VideoVolume extends HTMLInputElement {
     }
 }
 
-export { PlayPauseButton, MuteButton, VideoVolume };
+class AudioVolume extends HTMLInputElement {
+    audio: HTMLVideoElement | null;
+
+    constructor() {
+        super();
+        this.audio = document.querySelector("video-compressor audio");
+    }
+
+    connectedCallback() {
+        this.disabled = true;
+
+        if (!this.audio) {
+            console.error("Audio element not found");
+            return;
+        } else {
+            this.audio.volume = Number(this.value) / 100;
+            this.disabled = false;
+        }
+
+
+        this.addEventListener("input", (e: any) => {
+            if (this.audio) this.audio.volume = Number(e.target.value) / 100;
+        })
+    }
+}
+
+export { PlayPauseButton, MuteButton, VideoVolume, AudioVolume };
