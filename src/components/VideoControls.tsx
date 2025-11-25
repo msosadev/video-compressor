@@ -1,10 +1,19 @@
 import { fetchFile } from "@ffmpeg/util";
 import { Download, FilePlus, Pause, Play, Volume, VolumeX } from "feather-icons-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 const VideoControls = (props: any) => {
     const { loaded } = props;
     const [videoSrc, setVideoSrc] = useState<any>(null);
+    const [videoVolume, setVideoVolume] = useState<number>(0);
+    const [videoMuted, setVideoMuted] = useState<boolean>(true);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    const handleVolumeChange = (e: any) => {
+        const newVolume = e.target.value;
+        setVideoVolume(newVolume);
+        if (videoRef.current) videoRef.current.volume = newVolume / 100; // Set the video's volume
+    };
 
     const onFileLoad = async (e: any) => {
         const file = e.target.files?.[0] ?? null;
@@ -22,31 +31,30 @@ const VideoControls = (props: any) => {
                         <FilePlus size={20} />
                     </label>
                 </div>
-                <video src={videoSrc} muted autoPlay></video>
+                <video ref={videoRef} src={videoSrc} muted={videoMuted ? true : false} autoPlay></video>
             </div>
             <div className="js-video-controls">
                 <div className="buttons-wrapper">
                     <button disabled={loaded ? false : true} className="button paused">
-                        <Play size={20}/>
-                        <Pause size={20}/>
+                        <Play size={20} />
+                        <Pause size={20} />
                     </button>
 
                     <a href="#" className="disabled download-button button">
-                        <Download size={20}/>
+                        <Download size={20} />
                     </a>
                 </div>
                 <div className="volume-wrapper">
-                    <button disabled={loaded ? false : true} className="button">
-                        <Volume size={20}/>
-                        <VolumeX size={20}/>
+                    <button onClick={() => { setVideoMuted(!videoMuted) }} disabled={loaded ? false : true} className="button">
+                        {videoMuted ? <VolumeX size={20} /> : <Volume size={20} />}
                     </button>
                     <div>
-                        <input disabled={loaded ? false : true} className="js-video-volume" value="0" type="range" id="video-volume" name="video-volume" min="0" max="100" />
+                        <input onChange={handleVolumeChange} disabled={loaded ? false : true} className="js-video-volume" value={videoVolume} type="range" id="video-volume" name="video-volume" min="0" max="100" />
                     </div>
                 </div>
             </div>
             <div className="js-progress-container">
-                <input disabled={loaded ? false : true} className="js-video-progress" value="0" type="range" id="video-progress" name="video-progress" list="tickmarks" min="0" max="1000" />
+                <input disabled={loaded ? false : true} className="js-video-progress" type="range" id="video-progress" name="video-progress" list="tickmarks" min="0" max="1000" />
                 <datalist id="tickmarks">
                 </datalist>
             </div>
